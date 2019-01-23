@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Image and model names
-TEST_IMG=ADE_val_00001519.jpg
+TEST_IMG=test_input/panel_10_ori.jpg
 MODEL_PATH=baseline-resnet50dilated-ppm_deepsup
 RESULT_PATH=./
 

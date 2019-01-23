@@ -4,3 +4,4 @@ ckpt/
 vis/
 log/
 pretrained/
+baseline-resnet50dilated-ppm_deepsup/

@@ -29,10 +29,11 @@ def visualize_result(data, pred, args):
     # aggregate images and save
     im_vis = np.concatenate((img, pred_color),
                             axis=1).astype(np.uint8)
-
     img_name = info.split('/')[-1]
-    cv2.imwrite(os.path.join(args.result,
-                img_name.replace('.jpg', '.png')), im_vis)
+
+    save_dir = 'test_output/'
+    save_img = os.path.join(args.result, img_name.replace('.jpg', '.png'))
+    cv2.imwrite(save_dir+save_img, im_vis)
 
 
 def test(segmentation_module, loader, args):
@@ -93,8 +94,26 @@ def main(args):
     segmentation_module = SegmentationModule(net_encoder, net_decoder, crit)
 
     # Dataset and Loader
-    # list_test = [{'fpath_img': args.test_img}]
+    args.test_imgs = [
+        'test_input/panel_00_ori.jpg',
+        'test_input/panel_01_ori.jpg',
+        'test_input/panel_02_ori.jpg',
+        'test_input/panel_03_ori.jpg',
+        'test_input/panel_04_ori.jpg',
+        'test_input/panel_05_ori.jpg',
+        'test_input/panel_06_ori.jpg',
+        'test_input/panel_07_ori.jpg',
+        'test_input/panel_08_ori.jpg',
+        'test_input/panel_09_ori.jpg',
+        'test_input/panel_10_ori.jpg',
+        'test_input/panel_11_ori.jpg',
+        'test_input/panel_12_ori.jpg',
+        'test_input/panel_13_ori.jpg'
+    ]
     list_test = [{'fpath_img': x} for x in args.test_imgs]
+
+    print(list_test)
+
     dataset_test = TestDataset(
         list_test, args, max_sample=args.num_val)
     loader_test = torchdata.DataLoader(
