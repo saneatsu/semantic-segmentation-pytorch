@@ -18,7 +18,14 @@ import cv2
 from tqdm import tqdm
 
 colors = loadmat('data/color150.mat')['colors']
-
+house_labelmap = [
+    0, #787878_灰色_壁
+    3, #503232_茶色_床
+    5, #787850_汚い緑_天井
+    8, #e6e6e6_白よりの灰色_窓
+    14, #08ff33_明るい緑_ドア
+    82 #ffad00_オレンジ_天井のライト
+]
 
 def visualize_result(data, pred, args):
     (img, info) = data
@@ -32,13 +39,12 @@ def visualize_result(data, pred, args):
     img_name = info.split('/')[-1]
 
     save_dir = 'test_output/'
-    save_img = os.path.join(args.result, img_name.replace('.jpg', '.png'))
-    cv2.imwrite(save_dir+save_img, im_vis)
+    save_img = os.path.join(args.result, img_name)
+    cv2.imwrite(save_dir+save_img, pred_color)
 
 
 def test(segmentation_module, loader, args):
     segmentation_module.eval()
-
     pbar = tqdm(total=len(loader))
     for batch_data in loader:
         # process data
@@ -62,8 +68,22 @@ def test(segmentation_module, loader, args):
                 pred_tmp = segmentation_module(feed_dict, segSize=segSize)
                 scores = scores + pred_tmp / len(args.imgSize)
 
-            _, pred = torch.max(scores, dim=1)
-            pred = as_numpy(pred.squeeze(0).cpu())
+            numpy_scores = scores.cpu().numpy()
+            cand_indice = house_labelmap
+            selected_c = []
+            for y in range(numpy_scores.shape[2]):   
+                y_arr = []
+                for x in range(numpy_scores.shape[3]):
+                    vec = numpy_scores[0, :, y, x]
+                    rank = np.argsort(vec)
+                    within_top = rank[-10:]
+                    if np.any(np.isin(cand_indice, within_top)):
+                        selected_ind = cand_indice[np.argmax(vec[cand_indice])]
+                    else:
+                        selected_ind = np.argmax(vec)
+                    y_arr.append(selected_ind)
+                selected_c.append(y_arr)
+            pred = np.array(selected_c)
 
         # visualization
         visualize_result(
@@ -95,20 +115,43 @@ def main(args):
 
     # Dataset and Loader
     args.test_imgs = [
-        'test_input/panel_00_ori.jpg',
-        'test_input/panel_01_ori.jpg',
-        'test_input/panel_02_ori.jpg',
-        'test_input/panel_03_ori.jpg',
-        'test_input/panel_04_ori.jpg',
-        'test_input/panel_05_ori.jpg',
-        'test_input/panel_06_ori.jpg',
-        'test_input/panel_07_ori.jpg',
-        'test_input/panel_08_ori.jpg',
-        'test_input/panel_09_ori.jpg',
-        'test_input/panel_10_ori.jpg',
-        'test_input/panel_11_ori.jpg',
-        'test_input/panel_12_ori.jpg',
-        'test_input/panel_13_ori.jpg'
+#         'test_input/panel_00_ori.jpg',
+#         'test_input/panel_01_ori.jpg',
+#         'test_input/panel_02_ori.jpg',
+#         'test_input/panel_03_ori.jpg',
+#         'test_input/panel_04_ori.jpg',
+#         'test_input/panel_05_ori.jpg',
+#         'test_input/panel_06_ori.jpg',
+#         'test_input/panel_07_ori.jpg',
+#         'test_input/panel_08_ori.jpg',
+#         'test_input/panel_09_ori.jpg',
+#         'test_input/panel_10_ori.jpg',
+#         'test_input/panel_11_ori.jpg',
+#         'test_input/panel_12_ori.jpg',
+#         'test_input/panel_13_ori.jpg',
+#         'test_input/173_768x1536.jpg',
+#         'test_input/panel_81010.jpg',
+#         'test_input/panel_81013.jpg',
+#         'test_input/panel_81014.jpg',
+#         'test_input/panel_81021.jpg',
+#         'test_input/panel_81022.jpg',
+#         'test_input/panel_81028.jpg',
+#         'test_input/panel_81030.jpg',
+        'test_input/panel_81045.jpg',
+        'test_input/panel_81049.jpg',
+        'test_input/panel_81050.jpg',
+        'test_input/panel_81056.jpg',
+        'test_input/panel_81087.jpg',
+        'test_input/panel_81109.jpg',
+        'test_input/panel_81121.jpg',
+        'test_input/panel_81122.jpg',
+        'test_input/panel_81127.jpg',
+        'test_input/panel_81138.jpg',
+        'test_input/panel_81142.jpg',
+        'test_input/panel_81162.jpg',
+        'test_input/panel_81195.jpg',
+        'test_input/panel_81410.jpg',
+        'test_input/panel_84608.jpg'
     ]
     list_test = [{'fpath_img': x} for x in args.test_imgs]
 

@@ -85,9 +85,24 @@ def colorEncode(labelmap, colors, mode='BGR'):
     labelmap = labelmap.astype('int')
     labelmap_rgb = np.zeros((labelmap.shape[0], labelmap.shape[1], 3),
                             dtype=np.uint8)
-    for label in unique(labelmap):
-        if label < 0:
-            continue
+    unq_labelmap = unique(labelmap)
+
+#     house_labelmap = [
+#         0, #787878_灰色_壁
+#         3, #503232_茶色_床
+#         5, #787850_汚い緑_天井
+#         8, #e6e6e6_白よりの灰色_窓
+#         14, #08ff33_明るい緑_ドア
+#         82 #ffad00_オレンジ_天井のライト
+#     ]
+#     delete_index = []
+#     for i, label in enumerate(unq_labelmap):
+#         if label not in house_labelmap:
+#             delete_index.append(i)
+#     new_labelmap = np.delete(unq_labelmap, delete_index)    
+    
+    for label in (unq_labelmap):
+        if label < 0: continue
         labelmap_rgb += (labelmap == label)[:, :, np.newaxis] * \
             np.tile(colors[label],
                     (labelmap.shape[0], labelmap.shape[1], 1))
